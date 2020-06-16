@@ -88,7 +88,7 @@ class Db{
 		$st->bindValue(2,$this->dashboard->__get('data_fim'));
 		$st->execute();
 
-		//retorna apenas o atributo numero_vendas da tb_vendas
+		//total_vendas ->mesmo nome do alias
 		return $st->fetch(PDO::FETCH_OBJ)->total_vendas;
 	}
 }
@@ -97,16 +97,19 @@ $dashboard = new Dashboard();
 $conexao = new Conexao();
 $db = new Db($conexao, $dashboard);
 
-$dashboard->__set('data_inicio','2018-10-01');
-$dashboard->__set('data_fim','2018-10-31');
+$competencia = explode('-',$_GET['competencia']);
+$ano = $competencia[0];
+$mes = $competencia[1];
+$diasMes = cal_days_in_month(CAL_GREGORIAN, $mes, $ano);
+
+$dashboard->__set('data_inicio',$ano.'-'.$mes.'-01');
+$dashboard->__set('data_fim',$ano.'-'.$mes.'-'.$diasMes);
 
 
 $dashboard->__set('numero_vendas',$db->getNumeroVendas());
 $dashboard->__set('total_vendas',$db->getTotalVendas());
 
-echo "<pre>";
-print_r($dashboard);
-echo "</pre>";
+echo json_encode($dashboard);
 
 
 
