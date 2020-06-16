@@ -4,6 +4,9 @@ class Dashboard{
 	public $data_fim;
 	public $numero_vendas;
 	public $total_vendas;
+	public $total_despesa;
+	public $cliente_ativo;
+	public $cliente_inativo;
 
 	public function __get($atributo){
 		return $this->$atributo;
@@ -81,9 +84,7 @@ class Db{
 			tb_vendas
 		where
 			data_venda between ? and ?';
-		$st = $this->conexao->prepare($query);
-		/*$st->bindValue(1,$dashboard->data_inicio);
-		$st->bindValue(2,$dashboard->data_fim);*/
+		$st = $this->conexao->prepare($query);		
 		$st->bindValue(1,$this->dashboard->__get('data_inicio'));
 		$st->bindValue(2,$this->dashboard->__get('data_fim'));
 		$st->execute();
@@ -91,11 +92,55 @@ class Db{
 		//total_vendas ->mesmo nome do alias
 		return $st->fetch(PDO::FETCH_OBJ)->total_vendas;
 	}
+
+	public function getTotalDespesas(){
+		$query = '
+		select 
+			sum(total) as total_despesa
+		from 
+			tb_despesas
+		where
+			data_despesa between ? and ?';
+		$st = $this->conexao->prepare($query);
+		$st->bindValue(1, $this->dashboard->__get('data_inicio'));
+		$st->bindValue(2, $this->dashboard->__get('data_fim'));
+		$st->execute();
+		return $st->fetch(PDO::FETCH_OBJ)->total_despesa;
+	}
+
+	public function getClienteAtivo(){
+		$query ='
+		select
+			count(cliente_ativo) as cliente_ativo
+		from
+			tb_clientes
+		where
+			cliente_ativo = 1';
+		$st = $this->conexao->prepare($query);
+		$st->execute();
+		return $st->fetch(PDO::FETCH_OBJ)->cliente_ativo;
+	}
+
+	public function getClienteInativo(){
+		$query ='
+		select
+			count(cliente_ativo) as cliente_inativo
+		from
+			tb_clientes
+		where
+			cliente_ativo = 0';
+		$st = $this->conexao->prepare($query);
+		$st->execute();
+		return $st->fetch(PDO::FETCH_OBJ)->cliente_inativo;
+	}
 }
+
 
 $dashboard = new Dashboard();
 $conexao = new Conexao();
 $db = new Db($conexao, $dashboard);
+
+
 
 $competencia = explode('-',$_GET['competencia']);
 $ano = $competencia[0];
@@ -108,6 +153,9 @@ $dashboard->__set('data_fim',$ano.'-'.$mes.'-'.$diasMes);
 
 $dashboard->__set('numero_vendas',$db->getNumeroVendas());
 $dashboard->__set('total_vendas',$db->getTotalVendas());
+$dashboard->__set('total_despesa',$db->getTotalDespesas());
+$dashboard->__set('cliente_ativo',$db->getClienteAtivo());
+$dashboard->__set('cliente_inativo',$db->getClienteInativo());
 
 echo json_encode($dashboard);
 

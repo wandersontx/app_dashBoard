@@ -24,6 +24,9 @@ $(document).ready(() => {
 			success: dados =>{//caso tenha sucesso, terá acesso aos dados				
 				$('#numVendas').html(dados.numero_vendas)
 				$('#totVendas').html(dados.total_vendas)
+				$('#totDespesas').html(dados.total_despesa)
+				$('#clienteAtivo').html(dados.cliente_ativo)
+				$('#clienteInativo').html(dados.cliente_inativo)
 				
 			},
 			error: erro =>{console.log(erro)}//caso de erro, exibirá uma mensagem de erro
